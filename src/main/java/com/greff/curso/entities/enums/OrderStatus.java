@@ -8,7 +8,6 @@ public enum OrderStatus {
     CANCELED(5);
 
     private int code;
-
     private OrderStatus(int code){
         this.code = code;
     }
