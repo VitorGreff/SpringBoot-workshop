@@ -20,8 +20,12 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "client_id")
     private User client;
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL) //relação 1 para 1 com mesmo id, isso é obrigatório
+    private Payment payment;
     @OneToMany(mappedBy = "id.order")
     private Set<OrderItem> items = new HashSet<>();
+    private Integer orderStatus;
+
     public Order(){}
     public Order(Long id, Instant moment, OrderStatus orderStatus, User client) {
         this.id = id;
@@ -30,7 +34,6 @@ public class Order {
         this.client = client;
     }
 
-    private Integer orderStatus;
 
     public Long getId() {
         return this.id;
@@ -65,8 +68,25 @@ public class Order {
             this.orderStatus = orderStatus.getCode();
     }
 
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
     public Set<OrderItem> getItems(){
         return items;
+    }
+
+    public Double getTotal(){
+        double sum = 0.0;
+        for (OrderItem item: items
+             ) {
+            sum+=item.getSubTotal();
+        }
+        return sum;
     }
     @Override
     public boolean equals(Object o) {
