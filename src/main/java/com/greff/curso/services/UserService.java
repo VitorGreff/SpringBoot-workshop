@@ -2,7 +2,10 @@ package com.greff.curso.services;
 
 import com.greff.curso.entities.User;
 import com.greff.curso.repositories.UserRepository;
+import com.greff.curso.services.exceptions.DatabaseException;
+import com.greff.curso.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +22,7 @@ public class UserService {
 
     public User findById(Long id){
         Optional<User> obj =  repository.findById(id);
-        return obj.get();
+        return obj.orElseThrow(()-> new ResourceNotFoundException(id));
     }
 
     public User insert(User obj){
@@ -27,9 +30,29 @@ public class UserService {
     }
 
     public void deleteById(Long id){
-        repository.delete(findById(id));
+
+        try {
+            repository.delete(findById(id));
+        }
+        catch(ResourceNotFoundException e){
+            throw new ResourceNotFoundException(id);
+        }
+        catch (DataIntegrityViolationException e){
+            throw new DatabaseException(e.getMessage());
+        }
     }
 
+    public User update(Long id, User obj){
+        User entity = repository.getReferenceById(id); //monitora objeto
+        updateData(entity, obj);
+        return repository.save(entity);
+    }
+
+    private void updateData(User entity, User obj) {
+        entity.setName(obj.getName());
+        entity.setEmail(obj.getEmail());
+        entity.setPhone(obj.getPhone());
+    }
 
 
 }
